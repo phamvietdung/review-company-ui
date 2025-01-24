@@ -26,7 +26,6 @@ function App() {
 
     const theme = useMantineTheme();
 
-
     return (
         <>
 
@@ -65,7 +64,7 @@ function App() {
                         // {...props}
                         />
 
-                        <div style={{ marginTop: 20, padding:10, borderRadius: 10, border: "1px solid #ddd" }}>
+                        <div style={{ marginTop: 20, padding: 10, borderRadius: 10, border: "1px solid #ddd" }}>
                             <Table data={tableData} />
                         </div>
 

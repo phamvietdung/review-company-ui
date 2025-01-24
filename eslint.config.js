@@ -5,6 +5,12 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
+  {
+    rules: {
+      "no-unused-vars": "warn",
+      "no-undef": "warn"
+    }
+  },
   { ignores: ['dist'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
