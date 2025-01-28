@@ -19,6 +19,12 @@ const default_page_size = 20
 
 const token = window.localStorage.getItem("token");
 
+function getUrl(url: string) {
+    if (token != undefined && token != "")
+        return url + "?key=" + token
+    return url
+}
+
 function App() {
 
     const [isEditable, setEditable] = useState(window.localStorage.getItem("token") != undefined ? true : false)
@@ -56,7 +62,7 @@ function App() {
 
     const fetchData = (text: string, page: number, page_size: number) => {
         setVisible(true)
-        instance.post(`/search?key=${token == undefined ? '' : token}`, {
+        instance.post(getUrl("/search"), {
             "search_text": text,
             "page": page - 1,
             "page_size": page_size
@@ -182,13 +188,13 @@ function DataTable(props: { isEditable: boolean, elements: any[], openDetailCall
     var innerHeight = window.innerHeight ?? 0;
 
     const setIsHidden = (id: number, value: boolean) => {
-        instance.put(`/reviews/${id}/is_hidden/${value}?key=${token}`).then((success: any) => {
+        instance.put(getUrl(`/reviews/${id}/is_hidden/${value}`)).then((success: any) => {
             console.log(success)
         });
     }
 
     const setIsReviewed = (id: number, value: boolean) => {
-        instance.put(`/reviews/${id}/is_reviewed/${value}?key=${token}`).then((success: any) => {
+        instance.put(getUrl(`/reviews/${id}/is_reviewed/${value}`)).then((success: any) => {
             console.log(success)
         });
     }
