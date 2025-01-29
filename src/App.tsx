@@ -7,6 +7,7 @@ import { IconMoonFilled, IconSun, IconArrowRight, IconSearch, IconEdit } from '@
 
 import axios from 'axios';
 import { useDisclosure } from '@mantine/hooks';
+import { useForm } from '@mantine/form';
 
 const instance = axios.create({
     baseURL: 'http://127.0.0.1:8000',
@@ -49,7 +50,7 @@ function App() {
 
     const [openedDetail, setOpenedDetail] = useDisclosure(false);
 
-    const [detail, setDetail] = useState<any>({})
+    const [detailId, setDetailId] = useState<number | undefined>()
 
     const scrollToTop = () => viewport.current!.scrollTo({ top: 0, behavior: 'instant' });
 
@@ -144,9 +145,9 @@ function App() {
                                         <DataTable
                                             isEditable={isEditable}
                                             elements={bodyData}
-                                            openDetailCallback={(dt: any) => {
-                                                console.log(dt)
-                                                setDetail(dt)
+                                            openDetailCallback={(dtid: any) => {
+                                                console.log(dtid)
+                                                setDetailId(dtid)
                                                 setOpenedDetail.open()
                                             }}
                                             viewport={viewport}
@@ -157,7 +158,7 @@ function App() {
                                                 setPage(e)
                                                 if (current_search != undefined)
                                                     fetchData(current_search, e, default_page_size)
-                                            }} total={totalRow / default_page_size} />
+                                            }} total={totalRow / default_page_size + 1} />
                                         }
 
                                     </>
@@ -177,7 +178,7 @@ function App() {
 
                 </Grid>
             </Container>
-            <DetailRow isEditable={isEditable} opened={openedDetail} element={detail} closeCallback={setOpenedDetail.close} />
+            <DetailRow isEditable={isEditable} opened={openedDetail} review_id={detailId} closeCallback={setOpenedDetail.close} />
         </>
 
     )
@@ -204,7 +205,7 @@ function DataTable(props: { isEditable: boolean, elements: any[], openDetailCall
             {/* <Table.Td>{element.CompanyName}</Table.Td> */}
             <Table.Td>
                 <Text c="blue" onClick={() => {
-                    props.openDetailCallback(element)
+                    props.openDetailCallback(element.Id)
                 }}
                     style={{ cursor: "pointer" }}>
                     {element.CompanyName}
@@ -254,20 +255,116 @@ function DataTable(props: { isEditable: boolean, elements: any[], openDetailCall
 }
 
 
-function DetailRow(props: { isEditable: boolean, opened: boolean, element: any, closeCallback: any }) {
+function DetailRow(props: { review_id: number | undefined, isEditable: boolean, opened: boolean, closeCallback: any }) {
 
+    const form = useForm({
+        mode: 'uncontrolled',
+        initialValues: {
+            company_name: '',
+            salary: '',
+            position: '',
+            year: '',
+            other: '',
+        },
+
+        // validate: {
+        //     email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+        // },
+    });
+
+    const [data, setData] = useState<any>(undefined)
+
+    useEffect(() => {
+        if (props.review_id != undefined) {
+            instance.get(getUrl(`/reviews/${props.review_id}`)).then((success: any) => {
+                console.log(success)
+                setData(success.data)
+            });
+        }
+    }, [props.review_id])
 
     return (
         <>
-            <Modal opened={props.opened} onClose={props.closeCallback} title={props.element.CompanyName} size="md">
+            <Modal opened={props.opened} onClose={props.closeCallback}
+                title={"Cập nhật"}
+                size="md">
 
-                {
+                {/* {
                     props.element != undefined && props.element.JsonRawData != undefined ?
                         <JsonInput
                             autosize
                             minRows={2}
                             value={JSON.stringify(JSON.parse(props.element.JsonRawData), null, 4)}
                         />
+                        : <></>
+                } */}
+                {
+                    props.isEditable && props.review_id != undefined && data != undefined ?
+                        <form
+                            onSubmit={form.onSubmit((values) => {
+                                console.log(values)
+                                instance.put(getUrl(`/reviews/${props.review_id}`), {
+                                    "company_name": data.CompanyName,
+                                    "salary": data.Salary,
+                                    "position": data.Position,
+                                    "year": data.Year,
+                                    "other": data.Other,
+                                }).then((success: any) => {
+                                    console.log(success)
+                                    props.closeCallback()
+                                });
+                            })}>
+                            <TextInput
+                                // withAsterisk
+                                label="Tên Công Ty"
+                                placeholder="Tên Công Ty"
+                                key={form.key("company_name")}
+                                // {...form.getInputProps('email')}
+                                value={data.CompanyName}
+                                onChange={(e) => setData({ ...data, CompanyName: e.target.value })}
+                            />
+
+                            <TextInput
+                                // withAsterisk
+                                label="Lương"
+                                placeholder="Lương"
+                                key={form.key("salary")}
+                                // {...form.getInputProps('email')}
+                                value={data.Salary}
+                                onChange={(e) => setData({ ...data, Salary: e.target.value })}
+                            />
+                            <TextInput
+                                // withAsterisk
+                                label="Vị trí"
+                                placeholder="Vị trí"
+                                key={form.key("position")}
+                                // {...form.getInputProps('email')}
+                                value={data.Position}
+                                onChange={(e) => setData({ ...data, Position: e.target.value })}
+                            />
+                            <TextInput
+                                // withAsterisk
+                                label="Năm"
+                                placeholder="Năm"
+                                key={form.key("year")}
+                                // {...form.getInputProps('email')}
+                                value={data.Year}
+                                onChange={(e) => setData({ ...data, Year: e.target.value })}
+                            />
+                            <TextInput
+                                // withAsterisk
+                                label="Khác"
+                                placeholder="Khác"
+                                key={form.key("other")}
+                                // {...form.getInputProps('email')}
+                                value={data.Other}
+                                onChange={(e) => setData({ ...data, Other: e.target.value })}
+                            />
+
+                            <Group justify="flex-end" mt="md">
+                                <Button type="submit">Submit</Button>
+                            </Group>
+                        </form>
                         : <></>
                 }
 
