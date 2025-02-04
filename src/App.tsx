@@ -205,7 +205,8 @@ function DataTable(props: { isEditable: boolean, elements: any[], openDetailCall
             {/* <Table.Td>{element.CompanyName}</Table.Td> */}
             <Table.Td>
                 <Text c="blue" onClick={() => {
-                    props.openDetailCallback(element.Id)
+                    if (props.isEditable)
+                        props.openDetailCallback(element.Id)
                 }}
                     style={{ cursor: "pointer" }}>
                     {element.CompanyName}
@@ -234,7 +235,7 @@ function DataTable(props: { isEditable: boolean, elements: any[], openDetailCall
 
     return (
         <ScrollArea h={innerHeight == 0 ? 450 : innerHeight - 250} viewportRef={props.viewport}>
-            <Table striped highlightOnHover stickyHeader >
+            <Table striped highlightOnHover stickyHeader withTableBorder >
                 <Table.Thead>
                     <Table.Tr>
                         {/* <Table.Th>.No</Table.Th> */}
